@@ -1,6 +1,8 @@
 {
     "name": "p2/geo",
     "description": "GeoCoding library",
+    "keywords": [ "geo", "location", "coding", "library" ],
+    "homepage": "https://github.com/phillies2k/geo",
     "license": "MIT",
     "authors": [
         {
