@@ -38,7 +38,7 @@ class RouteTest extends \PHPUnit_Framework_TestCase
 
         $this->environment = new Environment();
 
-        $location = new Coordinate($this->environment, 13,37);
+        $location = new Coordinate(13,37);
         $this->testInstance = new Route($location);
     }
     
@@ -60,7 +60,7 @@ class RouteTest extends \PHPUnit_Framework_TestCase
      */
     public function testConstructor()
     {
-        $location = new Coordinate($this->environment, 13, 37);
+        $location = new Coordinate(13, 37);
         $reflection = new \ReflectionProperty('P2\Geo\Route\Route', 'locations');
         $this->assertTrue($reflection->isProtected());
         $reflection->setAccessible(true);
@@ -79,14 +79,17 @@ class RouteTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetLength()
     {
-        $location = new Coordinate($this->environment, 37, 13);
+        $location = new Coordinate(37, 13);
 
-        $this->assertEquals(0, $this->testInstance->getLength());
+        $this->assertEquals(0, $this->testInstance->getLength($this->environment));
         $this->testInstance->to($location);
 
         $locations = $this->testInstance->getLocations();
 
-        $this->assertEquals($locations[0]->getDistance($location), $this->testInstance->getLength());
+        $this->assertEquals(
+            $locations[0]->getDistance($location, $this->environment),
+            $this->testInstance->getLength($this->environment)
+        );
     }
 
     /**
@@ -95,7 +98,7 @@ class RouteTest extends \PHPUnit_Framework_TestCase
      */
     public function testContains()
     {
-        $location = new Coordinate($this->environment, 37, 13);
+        $location = new Coordinate(37, 13);
         $this->assertFalse($this->testInstance->contains($location));
         $this->testInstance->to($location);
         $this->assertTrue($this->testInstance->contains($location));
@@ -110,7 +113,7 @@ class RouteTest extends \PHPUnit_Framework_TestCase
         $locations = $this->testInstance->getLocations();
         $joinLocation = $locations[0];
 
-        $location = new Coordinate($this->environment, 37, 13);
+        $location = new Coordinate(37, 13);
         $route = new Route($location);
 
         $this->assertNull($this->testInstance->getJoinPoint($route));
@@ -137,7 +140,7 @@ class RouteTest extends \PHPUnit_Framework_TestCase
         $this->assertSame($this->testInstance, $this->testInstance->to($sameLocation));
         $this->assertEquals($locations, $reflection->getValue($this->testInstance));
 
-        $location = new Coordinate($this->environment, 37, 13);
+        $location = new Coordinate(37, 13);
         $this->assertSame($this->testInstance, $this->testInstance->to($location));
         $newLocations = $reflection->getValue($this->testInstance);
         $this->assertInternalType('array', $newLocations);

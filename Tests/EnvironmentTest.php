@@ -85,19 +85,6 @@ class EnvironmentTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers \P2\Geo\Environment::createLocation
-     * @group s
-     */
-    public function testCreateLocation()
-    {
-        $lat = 13.37;
-        $lng = 13.38;
-
-        $result = $this->testInstance->createLocation($lat, $lng);
-        $this->assertInstanceOf('P2\Geo\Location\CoordinateInterface', $result);
-    }
-
-    /**
      * @covers \P2\Geo\Environment::addUnitConverter
      * @covers \P2\Geo\Environment::getUnitConverter
      * @group s

@@ -119,17 +119,6 @@ class Environment
     }
 
     /**
-     * @param float $latitude
-     * @param float $longitude
-     *
-     * @return CoordinateInterface
-     */
-    public function createLocation($latitude, $longitude)
-    {
-        return new Coordinate($this, $latitude, $longitude);
-    }
-
-    /**
      * @param $sphereRadius
      * @param string $unit
      *

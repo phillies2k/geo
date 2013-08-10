@@ -39,9 +39,9 @@ class JoinPointTest extends \PHPUnit_Framework_TestCase
 
         $this->environment = new Environment();
 
-        $location1 = new Coordinate($this->environment, 13,37);
-        $location2 = new Coordinate($this->environment, 37,13);
-        $joinPoint = new Coordinate($this->environment, 13,38);
+        $location1 = new Coordinate(13, 37);
+        $location2 = new Coordinate(37, 13);
+        $joinPoint = new Coordinate(13, 38);
 
         $route1 = new Route($location1);
         $route1->to($joinPoint);

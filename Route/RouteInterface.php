@@ -9,6 +9,7 @@
  */
 namespace P2\Geo\Route;
 
+use P2\Geo\Environment;
 use P2\Geo\Location\CoordinateInterface;
 
 /**
@@ -20,11 +21,12 @@ interface RouteInterface
     /**
      * Returns the length of this route.
      *
+     * @param Environment $environment
      * @param null|string $unit
      *
      * @return float
      */
-    public function getLength($unit = null);
+    public function getLength(Environment $environment, $unit = null);
 
     /**
      * Returns true when the given location is within this route, false otherwise.

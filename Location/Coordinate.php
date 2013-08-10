@@ -18,11 +18,6 @@ use P2\Geo\Environment;
 class Coordinate implements CoordinateInterface
 {
     /**
-     * @var Environment
-     */
-    protected $environment;
-
-    /**
      * @var float
      */
     protected $latitude;
@@ -35,21 +30,19 @@ class Coordinate implements CoordinateInterface
     /**
      * Creates a new coordinate for the given latitude and longitude on the given environment.
      *
-     * @param Environment $environment
      * @param float $latitude
      * @param float $longitude
      */
-    public function __construct(Environment $environment, $latitude, $longitude)
+    public function __construct($latitude, $longitude)
     {
         $this->setLatitude($latitude);
         $this->setLongitude($longitude);
-        $this->environment = $environment;
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getBoundingCoordinates($distance, $unit = null)
+    public function getBoundingCoordinates($distance, Environment $environment, $unit = null)
     {
         if (! is_numeric($distance)) {
             throw new \InvalidArgumentException(
@@ -60,7 +53,7 @@ class Coordinate implements CoordinateInterface
             );
         }
 
-        $radius = $this->environment->getSphereRadius($unit);
+        $radius = $environment->getSphereRadius($unit);
         $radDistance = (float) $distance/$radius;
 
         list($minLat, $maxLat) = $this->calculateBoundingLatitudes($radDistance);
@@ -72,15 +65,15 @@ class Coordinate implements CoordinateInterface
         }
 
         return array(
-            $this->environment->createLocation(rad2deg($minLat), rad2deg($minLng)),
-            $this->environment->createLocation(rad2deg($maxLat), rad2deg($maxLng))
+            new Coordinate(rad2deg($minLat), rad2deg($minLng)),
+            new Coordinate(rad2deg($maxLat), rad2deg($maxLng))
         );
     }
 
     /**
      * {@inheritdoc}
      */
-    public function getDistance(CoordinateInterface $coordinates, $unit = null)
+    public function getDistance(CoordinateInterface $coordinates, Environment $environment, $unit = null)
     {
         $lat1 = $this->getLatitude(true);
         $lat2 = $coordinates->getLatitude(true);
@@ -88,15 +81,15 @@ class Coordinate implements CoordinateInterface
         return acos(
             sin($lat1) * sin($lat2) + cos($lat1) * cos($lat2) *
             cos($this->getLongitude(true) - $coordinates->getLongitude(true))
-        ) * $this->environment->getSphereRadius($unit);
+        ) * $environment->getSphereRadius($unit);
     }
 
     /**
      * {@inheritdoc}
      */
-    public function isWithin(CoordinateInterface $coordinates, $distance, $unit = null)
+    public function isWithin(CoordinateInterface $coordinates, $distance, Environment $environment, $unit = null)
     {
-        $boundingCoordinates = $this->getBoundingCoordinates($distance, $unit);
+        $boundingCoordinates = $this->getBoundingCoordinates($distance, $environment, $unit);
 
         return
             $coordinates->getLatitude() >= $boundingCoordinates[0]->getLatitude() &&
@@ -151,16 +144,6 @@ class Coordinate implements CoordinateInterface
     public function getLongitude($asRadian = false)
     {
         return $asRadian === true ? deg2rad($this->longitude) : $this->longitude;
-    }
-
-    /**
-     * Returns the environment for this coordinates.
-     *
-     * @return Environment
-     */
-    public function getEnvironment()
-    {
-        return $this->environment;
     }
 
     /**

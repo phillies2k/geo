@@ -25,41 +25,35 @@ interface CoordinateInterface extends LatitudeInterface, LongitudeInterface
      * meaning they have a distance to this location which is lower or equal to the given distance.
      *
      * @param float $distance The distance
+     * @param Environment $environment
      * @param int $unit (optional) Might be one of the Math::UNIT_* constants.
      *
      * @return CoordinateInterface[] The bounding locations (offsets) of this location for a certain distance
-     * @throws \InvalidArgumentException
-     *
      * @api
      */
-    public function getBoundingCoordinates($distance, $unit = null);
+    public function getBoundingCoordinates($distance, Environment $environment, $unit = null);
 
     /**
      * Returns the great circle distance (the distance between two points on the surface of a sphere).
      *
      * @param CoordinateInterface $coordinates
+     * @param Environment $environment
      * @param int $unit
      * @return float
      *
      * @api
      */
-    public function getDistance(CoordinateInterface $coordinates, $unit = null);
+    public function getDistance(CoordinateInterface $coordinates, Environment $environment, $unit = null);
 
     /**
      * @param CoordinateInterface $coordinates
      * @param float $distance
+     * @param Environment $environment
      * @param int $unit
      *
      * @return bool
      *
-     * @api
+     * @return bool
      */
-    public function isWithin(CoordinateInterface $coordinates, $distance, $unit = null);
-
-    /**
-     * Returns the environment for this coordinates.
-     *
-     * @return Environment
-     */
-    public function getEnvironment();
+    public function isWithin(CoordinateInterface $coordinates, $distance, Environment $environment, $unit = null);
 }

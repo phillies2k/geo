@@ -42,7 +42,7 @@ class CoordinateTest extends \PHPUnit_Framework_TestCase
         parent::setUp();
 
         $this->environment = new Environment();
-        $this->testInstance = new Coordinate($this->environment, static::TEST_LATITUDE, static::TEST_LONGITUDE);
+        $this->testInstance = new Coordinate(static::TEST_LATITUDE, static::TEST_LONGITUDE);
     }
 
     /**
@@ -77,11 +77,7 @@ class CoordinateTest extends \PHPUnit_Framework_TestCase
         $reflection = new \ReflectionClass('P2\Geo\Location\Coordinate');
         $constructor = $reflection->getConstructor();
         $this->assertTrue($constructor->isPublic());
-        $constructor->invokeArgs($mock, array($this->environment, static::TEST_LATITUDE, static::TEST_LONGITUDE));
-        $reflectionProperty = new \ReflectionProperty($mock, 'environment');
-        $this->assertTrue($reflectionProperty->isProtected());
-        $reflectionProperty->setAccessible(true);
-        $this->assertSame($this->environment, $reflectionProperty->getValue($mock));
+        $constructor->invokeArgs($mock, array(static::TEST_LATITUDE, static::TEST_LONGITUDE));
     }
 
     /**
@@ -138,7 +134,7 @@ class CoordinateTest extends \PHPUnit_Framework_TestCase
             $distance
         ));
 
-        $this->testInstance->getBoundingCoordinates($distance);
+        $this->testInstance->getBoundingCoordinates($distance, $this->environment);
     }
 
     /**
@@ -149,7 +145,7 @@ class CoordinateTest extends \PHPUnit_Framework_TestCase
     {
         $distance = 1337.1337;
 
-        $result = $this->testInstance->getBoundingCoordinates($distance);
+        $result = $this->testInstance->getBoundingCoordinates($distance, $this->environment);
         $this->assertInternalType('array', $result);
         $this->assertCount(2, $result);
         $this->assertInstanceOf('P2\Geo\Location\Coordinate', $result[0]);
@@ -169,7 +165,7 @@ class CoordinateTest extends \PHPUnit_Framework_TestCase
 
         $mock = $this
             ->getMockBuilder('P2\Geo\Location\Coordinate')
-            ->setConstructorArgs(array($this->environment, static::TEST_LATITUDE, static::TEST_LONGITUDE))
+            ->setConstructorArgs(array(static::TEST_LATITUDE, static::TEST_LONGITUDE))
             ->setMethods(array('calculateBoundingLatitudes'))
             ->getMock();
 
@@ -181,7 +177,7 @@ class CoordinateTest extends \PHPUnit_Framework_TestCase
 
         $reflection = new \ReflectionMethod($mock, 'getBoundingCoordinates');
         $this->assertTrue($reflection->isPublic());
-        $this->assertInternalType('array', $reflection->invoke($mock, $distance));
+        $this->assertInternalType('array', $reflection->invoke($mock, $distance, $this->environment));
 
 
     }
@@ -220,7 +216,7 @@ class CoordinateTest extends \PHPUnit_Framework_TestCase
 
         $mock = $this
             ->getMockBuilder('P2\Geo\Location\Coordinate')
-            ->setConstructorArgs(array($this->environment, static::TEST_LATITUDE, static::TEST_LONGITUDE))
+            ->setConstructorArgs(array(static::TEST_LATITUDE, static::TEST_LONGITUDE))
             ->setMethods(array('calculateDelta'))
             ->getMock();
 
@@ -308,25 +304,25 @@ class CoordinateTest extends \PHPUnit_Framework_TestCase
         $unit = null;
 
         $boundingCoordinates = array(
-            new Coordinate($this->environment, static::TEST_LATITUDE, static::TEST_LONGITUDE),
-            new Coordinate($this->environment, static::TEST_LATITUDE, static::TEST_LONGITUDE)
+            new Coordinate(static::TEST_LATITUDE, static::TEST_LONGITUDE),
+            new Coordinate(static::TEST_LATITUDE, static::TEST_LONGITUDE)
         );
 
         $mock = $this
             ->getMockBuilder('P2\Geo\Location\Coordinate')
-            ->setConstructorArgs(array($this->environment, static::TEST_LATITUDE, static::TEST_LONGITUDE))
+            ->setConstructorArgs(array(static::TEST_LATITUDE, static::TEST_LONGITUDE))
             ->setMethods(array('getBoundingCoordinates'))
             ->getMock();
 
         $mock
             ->expects($this->once())
             ->method('getBoundingCoordinates')
-            ->with($this->equalTo($distance), $this->equalTo($unit))
+            ->with($this->equalTo($distance), $this->identicalTo($this->environment), $this->equalTo($unit))
             ->will($this->returnValue($boundingCoordinates));
 
         $reflection = new \ReflectionMethod($mock, 'isWithin');
         $this->assertTrue($reflection->isPublic());
-        $this->assertTrue($reflection->invoke($mock, $this->testInstance, $distance));
+        $this->assertTrue($reflection->invoke($mock, $this->testInstance, $distance, $this->environment));
     }
 
     /**
@@ -335,16 +331,7 @@ class CoordinateTest extends \PHPUnit_Framework_TestCase
      */
     public function testGetDistance()
     {
-        $this->assertEquals(0, $this->testInstance->getDistance($this->testInstance));
-    }
-
-    /**
-     * @covers \P2\Geo\Location\Coordinate::getEnvironment
-     * @group s
-     */
-    public function testGetEnvironment()
-    {
-        $this->assertSame($this->environment, $this->testInstance->getEnvironment());
+        $this->assertEquals(0, $this->testInstance->getDistance($this->testInstance, $this->environment));
     }
 
     /**

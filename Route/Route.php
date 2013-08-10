@@ -9,6 +9,7 @@
  */
 namespace P2\Geo\Route;
 
+use P2\Geo\Environment;
 use P2\Geo\Location\CoordinateInterface;
 use P2\Geo\Route\RouteInterface;
 
@@ -34,7 +35,7 @@ class Route implements RouteInterface
     /**
      * {@inheritdoc}
      */
-    public function getLength($unit = null)
+    public function getLength(Environment $environment, $unit = null)
     {
         if (count($this->locations) < 2) {
 
@@ -52,7 +53,7 @@ class Route implements RouteInterface
             /** @var \P2\Geo\Location\CoordinateInterface $target */
             $target = array_shift($locations);
 
-            $length += $origin->getDistance($target, $unit);
+            $length += $origin->getDistance($target, $environment, $unit);
 
             $origin = $target;
         } while (count($locations) > 0);
