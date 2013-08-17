@@ -38,6 +38,16 @@ class Coordinate implements CoordinateInterface
     const FORMAT_RAD = 'RAD';
 
     /**
+     * @var int
+     */
+    const LATITUDE = 1;
+
+    /**
+     * @var int
+     */
+    const LONGITUDE = 2;
+
+    /**
      * @var float
      */
     protected $latitude;
@@ -57,8 +67,8 @@ class Coordinate implements CoordinateInterface
         list($latitude, $longitude) = explode(', ', $coordinate);
 
         return new static(
-            static::parseCoordinateString($latitude),
-            static::parseCoordinateString($longitude)
+            static::parseDMSString($latitude),
+            static::parseDMSString($longitude)
         );
     }
 
@@ -69,22 +79,37 @@ class Coordinate implements CoordinateInterface
      *
      * @return float
      */
-    public static function parseCoordinateString($coordinate)
+    public static function parseDMSString($coordinate)
     {
         preg_match(static::PATTERN_DMS, $coordinate, $matches);
         list (, $direction, $degrees, $minutes, $seconds) = $matches;
-        $decimal = static::toDecimal($degrees, $minutes, $seconds);
+        $decimal = static::dmsToDec($degrees, $minutes, $seconds);
         return $decimal * (in_array($direction, array('S', 'W')) ? -1: 1);
     }
 
     /**
-     * @param int $degrees
-     * @param int $minutes
-     * @param float $seconds
-     *
-     * @return float
+     * @param float $coordinate
+     * @return string
      */
-    public static function toDecimal($degrees, $minutes, $seconds)
+    public static function decToDMS($coordinate)
+    {
+        $vars = explode('.', (string) $coordinate);
+        $deg = $vars[0];
+        $tmp = '0.' . $vars[1];
+        $tmp = $tmp * 3600;
+        $min = floor($tmp/60);
+        $sec = $tmp - ($min*60);
+
+        return sprintf('%d° %d\' %01.1f"', $deg, $min, $sec);
+    }
+
+    /**
+     * @param $degrees
+     * @param $minutes
+     * @param $seconds
+     * @return mixed
+     */
+    public static function dmsToDec($degrees, $minutes, $seconds)
     {
         return $degrees + ((($minutes*60) + $seconds)/3600);
     }
@@ -209,34 +234,76 @@ class Coordinate implements CoordinateInterface
     }
 
     /**
+     * @param null $type
+     * @return float|string
+     * @throws \InvalidArgumentException
+     */
+    public function toDeg($type = null)
+    {
+        switch ($type) {
+            case static::LATITUDE:
+                return $this->getLatitude();
+            case static::LONGITUDE:
+                return $this->getLongitude();
+            case null:
+                return $this->getLatitude() . ', ' . $this->getLongitude();
+            default:
+                throw new \InvalidArgumentException();
+        }
+    }
+
+    /**
+     * @param null $type
+     * @return float|string
+     * @throws \InvalidArgumentException
+     */
+    public function toRad($type = null)
+    {
+        switch ($type) {
+            case static::LATITUDE:
+                return $this->getLatitude(true);
+            case static::LONGITUDE:
+                return $this->getLongitude(true);
+            case null:
+                return $this->getLatitude(true) . ', ' . $this->getLongitude(true);
+            default:
+                throw new \InvalidArgumentException();
+        }
+    }
+
+    /**
+     * @param null $type
+     * @return string
+     * @throws \InvalidArgumentException
+     */
+    public function toDMS($type = null)
+    {
+        switch ($type) {
+            case static::LATITUDE:
+                $coordinate = $this->getLatitude();
+                $dir = $coordinate < 0 ? 'S' : 'N';
+                break;
+            case static::LONGITUDE:
+                $coordinate = $this->getLongitude();
+                $dir = $coordinate < 0 ? 'W' : 'E';
+                break;
+            case null:
+                return $this->__toString();
+            default:
+                throw new \InvalidArgumentException();
+        }
+
+        return $dir . ' ' . static::decToDMS($coordinate);
+    }
+
+    /**
      * Returns a string representation of this coordinates.
      *
      * @return string
      */
     public function __toString()
     {
-        return sprintf(
-            '%s, %s',
-            $this->formatCoordinate($this->getLatitude(), $this->getLatitude() < 0 ? 'S' : 'N'),
-            $this->formatCoordinate($this->getLongitude(), $this->getLongitude() < 0 ? 'W' : 'E')
-        );
-    }
-
-    /**
-     * @param $coordinate
-     * @param $direction
-     * @return string
-     */
-    protected function formatCoordinate($coordinate, $direction)
-    {
-        $vars = explode('.', (string) $coordinate);
-        $deg = $vars[0];
-        $tmp = '0.' . $vars[1];
-        $tmp = $tmp * 3600;
-        $min = floor($tmp/60);
-        $sec = $tmp - ($min*60);
-
-        return sprintf('%s %d° %d\' %01.1f"', $direction, $deg, $min, $sec);
+        return sprintf('%s, %s', $this->toDMS(static::LATITUDE), $this->toDMS(static::LONGITUDE));
     }
 
     /**

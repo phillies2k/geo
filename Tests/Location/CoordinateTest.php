@@ -344,18 +344,13 @@ class CoordinateTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers \P2\Geo\Location\Coordinate::formatCoordinate
+     * @covers \P2\Geo\Location\Coordinate::decToDMS
      * @group s
      */
-    public function testFormatCoordinate()
+    public function testDecToDMS()
     {
-        $reflection = new \ReflectionMethod($this->testInstance, 'formatCoordinate');
-        $this->assertTrue($reflection->isProtected());
-        $reflection->setAccessible(true);
-
-        $coordinate = static::TEST_LATITUDE;
-        $string = $reflection->invoke($this->testInstance, $coordinate, 'N');
-        $this->assertEquals('N 12° 7\' 24.4"', $string);
+        $string = Coordinate::decToDMS(static::TEST_LATITUDE);
+        $this->assertEquals('12° 7\' 24.4"', $string);
     }
 
     /**
@@ -371,24 +366,66 @@ class CoordinateTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers \P2\Geo\Location\Coordinate::parseCoordinateString
+     * @covers \P2\Geo\Location\Coordinate::parseDMSString
      * @group s
      */
-    public function testParseCoordinateString()
+    public function testParseDMSString()
     {
-        $coordinate = Coordinate::parseCoordinateString('N 12° 7\' 24.4"');
+        $coordinate = Coordinate::parseDMSString('N 12° 7\' 24.4"');
 
         $this->assertEquals(12.123444444444, $coordinate);
     }
 
     /**
-     * @covers \P2\Geo\Location\Coordinate::toDecimal
+     * @covers \P2\Geo\Location\Coordinate::dmsToDec
      * @group s
      */
-    public function testToDecimal()
+    public function testDMSToDec()
     {
-        $coordinate = Coordinate::toDecimal(12, 7, 24.4);
+        $coordinate = Coordinate::dmsToDec(12, 7, 24.4);
 
         $this->assertEquals(12.123444444444, $coordinate);
+    }
+
+    /**
+     * @covers \P2\Geo\Location\Coordinate::toDMS
+     * @group s
+     */
+    public function testToDMS()
+    {
+        $this->assertEquals('N 12° 7\' 24.4"', $this->testInstance->toDMS(Coordinate::LATITUDE));
+        $this->assertEquals('E 11° 59\' 15.6"', $this->testInstance->toDMS(Coordinate::LONGITUDE));
+        $this->assertEquals('N 12° 7\' 24.4", E 11° 59\' 15.6"', $this->testInstance->toDMS());
+
+        $this->setExpectedException('InvalidArgumentException');
+        $this->testInstance->toDMS('INVALID');
+    }
+
+    /**
+     * @covers \P2\Geo\Location\Coordinate::toDeg
+     * @group s
+     */
+    public function testToDeg()
+    {
+        $this->assertEquals(static::TEST_LATITUDE, $this->testInstance->toDeg(Coordinate::LATITUDE));
+        $this->assertEquals(static::TEST_LONGITUDE, $this->testInstance->toDeg(Coordinate::LONGITUDE));
+        $this->assertEquals(static::TEST_LATITUDE . ', ' . static::TEST_LONGITUDE, $this->testInstance->toDeg());
+
+        $this->setExpectedException('InvalidArgumentException');
+        $this->testInstance->toDeg('INVALID');
+    }
+
+    /**
+     * @covers \P2\Geo\Location\Coordinate::toRad
+     * @group s
+     */
+    public function testToRad()
+    {
+        $this->assertEquals(deg2rad(static::TEST_LATITUDE), $this->testInstance->toRad(Coordinate::LATITUDE));
+        $this->assertEquals(deg2rad(static::TEST_LONGITUDE), $this->testInstance->toRad(Coordinate::LONGITUDE));
+        $this->assertEquals(deg2rad(static::TEST_LATITUDE) . ', ' . deg2rad(static::TEST_LONGITUDE), $this->testInstance->toRad());
+
+        $this->setExpectedException('InvalidArgumentException');
+        $this->testInstance->toRad('INVALID');
     }
 }
