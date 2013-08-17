@@ -18,6 +18,11 @@ use P2\Geo\Environment;
 class Coordinate implements CoordinateInterface
 {
     /**
+     * @var string
+     */
+    const PATTERN_DMS = '/(N|E|S|W)\s(\d+)°\s(\d+)\'\s([0-9]+(\.[0-9]+)?)"/';
+
+    /**
      * @var float
      */
     protected $latitude;
@@ -26,6 +31,48 @@ class Coordinate implements CoordinateInterface
      * @var float
      */
     protected $longitude;
+
+    /**
+     * @param string $coordinate
+     *
+     * @return Coordinate
+     */
+    public static function createFromString($coordinate)
+    {
+        list($latitude, $longitude) = explode(', ', $coordinate);
+
+        return new static(
+            static::parseCoordinateString($latitude),
+            static::parseCoordinateString($longitude)
+        );
+    }
+
+    /**
+     * Returns the decimal representation of the given DMS string.
+     *
+     * @param string $coordinate
+     *
+     * @return float
+     */
+    public static function parseCoordinateString($coordinate)
+    {
+        preg_match(static::PATTERN_DMS, $coordinate, $matches);
+        list (, $direction, $degrees, $minutes, $seconds) = $matches;
+        $decimal = static::toDecimal($degrees, $minutes, $seconds);
+        return $decimal * (in_array($direction, array('S', 'W')) ? -1: 1);
+    }
+
+    /**
+     * @param int $degrees
+     * @param int $minutes
+     * @param float $seconds
+     *
+     * @return float
+     */
+    public static function toDecimal($degrees, $minutes, $seconds)
+    {
+        return $degrees + ((($minutes*60) + $seconds)/3600);
+    }
 
     /**
      * Creates a new coordinate for the given latitude and longitude on the given environment.
@@ -153,7 +200,28 @@ class Coordinate implements CoordinateInterface
      */
     public function __toString()
     {
-        return sprintf('(%.02f, %.02f)', $this->getLatitude(), $this->getLongitude());
+        return sprintf(
+            '%s, %s',
+            $this->formatCoordinate($this->getLatitude(), $this->getLatitude() < 0 ? 'S' : 'N'),
+            $this->formatCoordinate($this->getLongitude(), $this->getLongitude() < 0 ? 'W' : 'E')
+        );
+    }
+
+    /**
+     * @param $coordinate
+     * @param $direction
+     * @return string
+     */
+    protected function formatCoordinate($coordinate, $direction)
+    {
+        $vars = explode('.', (string) $coordinate);
+        $deg = $vars[0];
+        $tmp = '0.' . $vars[1];
+        $tmp = $tmp * 3600;
+        $min = floor($tmp/60);
+        $sec = $tmp - ($min*60);
+
+        return sprintf('%s %d° %d\' %01.1f"', $direction, $deg, $min, $sec);
     }
 
     /**

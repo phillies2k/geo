@@ -340,7 +340,55 @@ class CoordinateTest extends \PHPUnit_Framework_TestCase
      */
     public function testToString()
     {
-        $expected = sprintf('(%.02f, %.02f)', static::TEST_LATITUDE, static::TEST_LONGITUDE);
-        $this->assertEquals($expected, (string) $this->testInstance);
+        $this->assertEquals('N 12° 7\' 24.4", E 11° 59\' 15.6"', (string) $this->testInstance);
+    }
+
+    /**
+     * @covers \P2\Geo\Location\Coordinate::formatCoordinate
+     * @group s
+     */
+    public function testFormatCoordinate()
+    {
+        $reflection = new \ReflectionMethod($this->testInstance, 'formatCoordinate');
+        $this->assertTrue($reflection->isProtected());
+        $reflection->setAccessible(true);
+
+        $coordinate = static::TEST_LATITUDE;
+        $string = $reflection->invoke($this->testInstance, $coordinate, 'N');
+        $this->assertEquals('N 12° 7\' 24.4"', $string);
+    }
+
+    /**
+     * @covers \P2\Geo\Location\Coordinate::createFromString
+     * @group s
+     */
+    public function testCreateFromString()
+    {
+        $coordinate = Coordinate::createFromString('N 12° 7\' 24.4", E 11° 59\' 15.6"');
+
+        $this->assertEquals(12.123444444444, $coordinate->getLatitude());
+        $this->assertEquals(11.987666666667, $coordinate->getLongitude());
+    }
+
+    /**
+     * @covers \P2\Geo\Location\Coordinate::parseCoordinateString
+     * @group s
+     */
+    public function testParseCoordinateString()
+    {
+        $coordinate = Coordinate::parseCoordinateString('N 12° 7\' 24.4"');
+
+        $this->assertEquals(12.123444444444, $coordinate);
+    }
+
+    /**
+     * @covers \P2\Geo\Location\Coordinate::toDecimal
+     * @group s
+     */
+    public function testToDecimal()
+    {
+        $coordinate = Coordinate::toDecimal(12, 7, 24.4);
+
+        $this->assertEquals(12.123444444444, $coordinate);
     }
 }

@@ -56,4 +56,12 @@ interface CoordinateInterface extends LatitudeInterface, LongitudeInterface
      * @return bool
      */
     public function isWithin(CoordinateInterface $coordinates, $distance, Environment $environment, $unit = null);
+
+    /**
+     * Returns the DMS representation of these coordinates.
+     * (e.g. N 34° 12' 13.1", E 11° 34' 37")
+     *
+     * @return string
+     */
+    public function __toString();
 }
