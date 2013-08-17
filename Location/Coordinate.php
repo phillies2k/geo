@@ -23,6 +23,21 @@ class Coordinate implements CoordinateInterface
     const PATTERN_DMS = '/(N|E|S|W)\s(\d+)°\s(\d+)\'\s([0-9]+(\.[0-9]+)?)"/';
 
     /**
+     * @var string
+     */
+    const FORMAT_DMS = 'DMS';
+
+    /**
+     * @var string
+     */
+    const FORMAT_DEG = 'DEG';
+
+    /**
+     * @var string
+     */
+    const FORMAT_RAD = 'RAD';
+
+    /**
      * @var float
      */
     protected $latitude;
